@@ -1,16 +1,15 @@
 function AM_Simulation
-% AM 调制解调综合仿真（Figure 固定像素，控件不被拉伸）
+% AM 调制解调综合仿真（子图手动定位，避开面板）
 
     A0 = 1.5;
 
-    % ===== Figure 固定像素尺寸 =====
     fig = figure('Units', 'pixels', ...
                  'Position', [100 100 1200 700], ...
                  'Color', 'w', ...
                  'MenuBar', 'figure', ...
                  'Name', 'AM Modulation Simulation');
     
-    % ===== 面板固定像素 =====
+    % ===== 面板 =====
     panel = uipanel('Parent', fig, 'Title', 'Parameters', ...
                     'Units', 'pixels', ...
                     'Position', [10 10 180 680], ...
@@ -86,10 +85,19 @@ function AM_Simulation
                           'HorizontalAlignment', 'left', 'FontSize', 9, ...
                           'Tag', 'txt_param');
     
-    % ===== 坐标轴：保持 5 子图布局 =====
-    ax1 = subplot(3,2,1); ax2 = subplot(3,2,2);
-    ax3 = subplot(3,2,3); ax4 = subplot(3,2,4);
-    ax5 = subplot(3,2,[5 6]);
+    % ===== 坐标轴：手动指定位置，避开面板 =====
+    % Figure 1200×700，面板占 x: 10~190
+    % 子图从 x=220 开始，宽度分两列
+    ax1 = axes('Parent', fig, 'Units', 'pixels', ...
+               'Position', [230 480 380 180]);
+    ax2 = axes('Parent', fig, 'Units', 'pixels', ...
+               'Position', [730 480 380 180]);
+    ax3 = axes('Parent', fig, 'Units', 'pixels', ...
+               'Position', [230 260 380 180]);
+    ax4 = axes('Parent', fig, 'Units', 'pixels', ...
+               'Position', [730 260 380 180]);
+    ax5 = axes('Parent', fig, 'Units', 'pixels', ...
+               'Position', [230 30 880 180]);
     
     handles.s_fm = s_fm;
     handles.s_fc = s_fc;
@@ -158,28 +166,39 @@ function update_plot(src, ~)
         m_rec = m_rec * (Am / max(abs(m_rec)));
     end
     
+    % 子图 1
     plot(handles.ax1, t, m, 'b', 'LineWidth', 1.5);
-    title(handles.ax1, 'Modulating Signal m(t)'); grid(handles.ax1, 'on');
-    axis(handles.ax1, [0 T -2.5 2.5]);
+    title(handles.ax1, 'Modulating Signal m(t)'); 
+    grid(handles.ax1, 'on');
+    xlim(handles.ax1, [0 T]); ylim(handles.ax1, [-2.5 2.5]);
     
+    % 子图 2
     plot(handles.ax2, t, c, 'r', 'LineWidth', 1);
-    title(handles.ax2, 'Carrier c(t)'); grid(handles.ax2, 'on');
-    axis(handles.ax2, [0 T -1.5 1.5]);
+    title(handles.ax2, 'Carrier c(t)'); 
+    grid(handles.ax2, 'on');
+    xlim(handles.ax2, [0 T]); ylim(handles.ax2, [-1.5 1.5]);
     
+    % 子图 3
     plot(handles.ax3, t, s_am, 'Color', [0.85 0.33 0.10], 'LineWidth', 1);
     hold(handles.ax3, 'on');
     plot(handles.ax3, t, A0+m, 'k--', 'LineWidth', 1.2);
     plot(handles.ax3, t, -(A0+m), 'k--', 'LineWidth', 1.2);
     hold(handles.ax3, 'off');
-    title(handles.ax3, 'AM Signal'); grid(handles.ax3, 'on');
-    axis(handles.ax3, [0 T -4 4]);
+    title(handles.ax3, 'AM Signal'); 
+    grid(handles.ax3, 'on');
+    xlim(handles.ax3, [0 T]); ylim(handles.ax3, [-4 4]);
     
-    plot(handles.ax4, t, m, 'b--', 'LineWidth', 1); hold(handles.ax4, 'on');
-    plot(handles.ax4, t, m_rec, 'g', 'LineWidth', 1.5); hold(handles.ax4, 'off');
-    title(handles.ax4, 'Demodulated vs Original'); grid(handles.ax4, 'on');
-    axis(handles.ax4, [0 T -2.5 2.5]);
+    % 子图 4
+    plot(handles.ax4, t, m, 'b--', 'LineWidth', 1); 
+    hold(handles.ax4, 'on');
+    plot(handles.ax4, t, m_rec, 'g', 'LineWidth', 1.5); 
+    hold(handles.ax4, 'off');
+    title(handles.ax4, 'Demodulated vs Original'); 
+    grid(handles.ax4, 'on');
+    xlim(handles.ax4, [0 T]); ylim(handles.ax4, [-2.5 2.5]);
     legend(handles.ax4, 'Original', 'Demodulated', 'Location', 'northeast');
     
+    % 子图 5：频谱
     m_freqs = [-fm, fm];
     m_amps  = [Am/2, Am/2];
     s_freqs = [-fc-fm, -fc, -fc+fm, fc-fm, fc, fc+fm];
@@ -192,7 +211,8 @@ function update_plot(src, ~)
     
     xlim(handles.ax5, [-fc-2*fm-20, fc+2*fm+20]);
     title(handles.ax5, 'Discrete Spectrum: Modulating (blue) vs AM (red)');
-    xlabel(handles.ax5, 'Frequency (Hz)'); ylabel(handles.ax5, 'Magnitude');
+    xlabel(handles.ax5, 'Frequency (Hz)'); 
+    ylabel(handles.ax5, 'Magnitude');
     grid(handles.ax5, 'on');
     legend(handles.ax5, 'Modulating', 'AM', 'Location', 'northeast');
 end
